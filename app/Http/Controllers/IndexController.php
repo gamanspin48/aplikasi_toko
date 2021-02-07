@@ -13,7 +13,7 @@ class IndexController extends Controller
     {
         $this->client = new Client([
             // Base URI is used with relative requests
-            'base_uri' => 'http://localhost:3000/'
+            'base_uri' => config('app.base_url_api')
         ]);
     }
 

@@ -69,7 +69,7 @@
     <!-- Button trigger modal -->
   
   <!-- Modal -->
-  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal fade" id="modalTambahBarang" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -78,31 +78,26 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
+        <form id="formTambahBarang">
         <div class="modal-body">
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3 row">
-                        <label for="inputPassword" class="col-sm-4 col-form-label">Kode Barang</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
-                        </div>
-                    </div>
-                    <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Nama Barang</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
+                            <input type="text" class="form-control" id="inputPassword" name="nama_barang" required>
                         </div>
                     </div>
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Satuan</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
+                            <input type="text" class="form-control" id="inputPassword" name="satuan" required>
                         </div>
                     </div>
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Stok</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
+                            <input type="number" class="form-control" id="inputPassword" name="stok" required>
                         </div>
                     </div>
                 </div>
@@ -110,25 +105,25 @@
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Harga Beli</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
+                            <input type="number" class="form-control" id="inputPassword" name="harga_beli" required>
                         </div>
                     </div>
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Harga Jual</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
+                            <input type="number" class="form-control" id="inputPassword" name="harga_jual" required>
                         </div>
                     </div>
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Merk</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
+                            <input type="text" class="form-control" id="inputPassword" name="merk" required>
                         </div>
                     </div>
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Spesifikasi</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword">
+                            <input type="text" class="form-control" id="inputPassword" name="spesifikasi" required>
                         </div>
                     </div>
                 </div>
@@ -139,7 +134,7 @@
             <div class="mb-3 row">
                 <label for="inputPassword" class="col-sm-2 col-form-label">Keterangan</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="inputPassword">
+                        <input type="text" class="form-control" id="inputPassword" name="keterangan" required>
                     </div>
                
             </div>
@@ -147,8 +142,9 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-primary">Tambah</button>
+          <button id="btnTambahSubmit" type="button" class="btn btn-primary">Tambah</button>
         </div>
+        </form>
       </div>
     </div>
   </div>
@@ -203,7 +199,7 @@
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Harga Jual</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="detail-harga_jual" disabled>
+                            <input type="number" pattern="[0-9]*" class="form-control" id="detail-harga_jual" disabled>
                         </div>
                     </div>
                     <div class="mb-3 row">
@@ -255,15 +251,54 @@
             }
         });
          $("#btnTambah").click(function(){
+           $('#modalTambahBarang').modal('show');
+        }); 
+         $("#btnTambahSubmit").click(function(){
+           let newBarang = $('#formTambahBarang').serializeArray();
+           newBarang = makeObject(newBarang);
+           let base_url = "@php echo config('app.base_url_api') @endphp";
+           if (isValid(newBarang)){
+               $.post( base_url+'barang', newBarang)
+                .done(function( data ) {
+                    console.log(data);
+                     $('#modalTambahBarang').modal('hide');
+                });
+              
+           }else{
+               alert('Isi Semua Data');
+           }
            
         }); 
     });
-    
+    const formatToCurrency = amount => {
+        return "IDR. " + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+    };
     function initDetail(barang){
         $.each( barang, function( key, value ) {
              $('#detail-'+key).val(value);
         })
     }
+    function makeObject(arr){
+        obj = {};
+        for (i = 0; i < arr.length; i++) {
+            obj[arr[i]['name']] = arr[i]['value'];
+        }
+        return obj;
+    }
+
+    function isValid(barang){
+        var result = true;
+         $.each( barang, function( key, value ) {
+            if (value == ""){
+                result = false;
+            }
+        });
+
+        return result;
+    }
+
+    
+    
   
 
 
