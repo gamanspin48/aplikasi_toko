@@ -18,13 +18,18 @@
           <a class="nav-link" href="/pengaturan_barang" tabindex="-1" aria-disabled="true">Pengaturan Barang</a>
         </li>
       </ul>
+        <div class="form-inline mt-2 mt-md-0">
+            
+            <button class="btn btn-outline-success my-2 my-sm-0">Logout</button>
+          </div>
      
     </div>
   </nav>
   <div class="pt-3">
     <div class="row m-2 ">
         <div class="col-md-12">
-            <h5 class="text-primary float-right">Saldo : Rp.100.000</h5>
+        {{-- <a><h5 class="text-primary float-right">Logout</h5></a> --}}
+            <h5 class="text-primary float-left">Saldo : Rp.100.000</h5>
         </div>
         <div class="col-md-6">
             <h5 class="text-center mb-5">Tabel Barang</h5>

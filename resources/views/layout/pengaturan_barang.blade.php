@@ -18,11 +18,18 @@
           <a class="nav-link" href="/pengaturan_barang" tabindex="-1" aria-disabled="true">Pengaturan Barang</a>
         </li>
       </ul>
+        <div class="form-inline mt-2 mt-md-0">
+            
+            <button class="btn btn-outline-success my-2 my-sm-0">Logout</button>
+          </div>
      
     </div>
   </nav>
   <div class="container pt-5">
       <div class="row mb-2">
+      <div class="col-md-12">
+        {{-- <a><h5 class="text-primary float-right">Logout</h5></a> --}}
+      </div>
           <div class="col-md-12 ">
             <h5 class="text-primary float-left">Saldo : Rp.100.000</h5>
             <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-plus"></i>&nbspTambah Barang</button>
@@ -40,29 +47,22 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Tiger Nixon</td>
-                <td>System Architect</td>
-                <td>Edinburgh</td>
-                <td>61</td>
-                <td>2011/04/25</td>
-                <td>
-                    <button type="button" class="btn btn-success"><i class="fa fa-edit"></i></button>
-                    <button type="button" class="btn btn-secondary"><i class="fa fa-eye"></i></button>
-                    <button type="button" class="btn btn-danger"> <i class="fa fa-trash"></i></button>
-                </td>
-            </tr>
+            @foreach ($barang as $b)
+                <tr>
+                    <td>{{$b->kode_barang}}</td>
+                    <td>{{$b->nama_barang}}</td>
+                    <td>{{$b->stok}}</td>
+                    <td>{{$b->harga_jual}}</td>
+                    <td>{{$b->harga_beli}}</td>
+                    <td>
+                        <button type="button" class="btn btn-success"><i class="fa fa-edit"></i></button>
+                        <button type="button" class="btn btn-secondary"><i class="fa fa-eye"></i></button>
+                        <button type="button" class="btn btn-danger"> <i class="fa fa-trash"></i></button>
+                    </td>
+                </tr>
+            @endforeach
         </tbody>
-        <tfoot>
-            <tr>
-                <th>Kode Barang</th>
-                <th>Nama Barang</th>
-                <th>Stok</th>
-                <th>Harga Jual</th>
-                <th>Harga Beli</th>
-                <th>Action</th>
-            </tr>
-        </tfoot>
+
             
         
     </table>
