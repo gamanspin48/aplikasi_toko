@@ -32,10 +32,10 @@
       </div>
           <div class="col-md-12 ">
             <h5 class="text-primary float-left">Saldo : Rp.100.000</h5>
-            <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-plus"></i>&nbspTambah Barang</button>
+            <button type="button" class="btn btn-primary float-right" id="btnTambah"><i class="fa fa-plus"></i>&nbspTambah Barang</button>
           </div>
       </div>
-    <table id="example" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+    <table id="tableBarang" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
         <thead>
             <tr>
                 <th>Kode Barang</th>
@@ -55,9 +55,9 @@
                     <td>{{$b->harga_jual}}</td>
                     <td>{{$b->harga_beli}}</td>
                     <td>
-                        <button type="button" class="btn btn-success"><i class="fa fa-edit"></i></button>
-                        <button type="button" class="btn btn-secondary"><i class="fa fa-eye"></i></button>
-                        <button type="button" class="btn btn-danger"> <i class="fa fa-trash"></i></button>
+                        <button type="button" class="btn btn-success"kode="{{$b->kode_barang}}" tipe="edit"><i class="fa fa-edit"></i></button>
+                        <button type="button" class="btn btn-secondary" kode="{{$b->kode_barang}}" tipe="detail"><i class="fa fa-eye"></i></button>
+                        <button type="button" class="btn btn-danger"kode="{{$b->kode_barang}}" tipe="hapus"> <i class="fa fa-trash"></i></button>
                     </td>
                 </tr>
             @endforeach
@@ -154,4 +154,120 @@
   </div>
       
   </div>
+
+  <!--Modal 2 -->
+    <div class="modal fade" id="modalDetailBarang" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Detail Barang</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Kode Barang</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-kode_barang" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Nama Barang</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-nama_barang" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Satuan</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-satuan" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Stok</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-stok" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Harga Beli</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-harga_beli" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Harga Jual</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-harga_jual" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Merk</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-merk" disabled>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Spesifikasi</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="detail-spesifikasi" disabled>
+                        </div>
+                    </div>
+                </div>
+               
+             
+                
+            </div>
+            <div class="mb-3 row">
+                <label for="inputPassword" class="col-sm-2 col-form-label">Keterangan</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="detail-keterangan" disabled>
+                    </div>
+               
+            </div>
+         
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Kembali</button>
+        </div>
+      </div>
+    </div>
+  </div>
+      
+  </div>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        var detailBarang = @php echo $barang_detail; @endphp;
+  
+        $("#tableBarang tbody tr td button").click(function () {
+            let kode = $(this).attr('kode');
+            let tipe = $(this).attr('tipe')
+            if (tipe == 'detail'){
+                initDetail(detailBarang[kode]);
+                $('#modalDetailBarang').modal('show');
+            }
+        });
+         $("#btnTambah").click(function(){
+           
+        }); 
+    });
+    
+    function initDetail(barang){
+        $.each( barang, function( key, value ) {
+             $('#detail-'+key).val(value);
+        })
+    }
+  
+
+
+</script>  
+
 @endsection
+
