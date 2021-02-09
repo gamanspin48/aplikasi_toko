@@ -35,7 +35,7 @@
             <button type="button" class="btn btn-primary float-right" id="btnTambah"><i class="fa fa-plus"></i>&nbspTambah Barang</button>
           </div>
       </div>
-    <table id="tableBarang" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+    <table id="tableBarang" data-order='[[ 0, "desc" ]]' class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
         <thead>
             <tr>
                 <th>Kode Barang</th>
@@ -238,10 +238,10 @@
   </div>
 
 <script type="text/javascript">
-
-    $(document).ready(function() {
-        var detailBarang = @php echo $barang_detail; @endphp;
+    var detailBarang = @php echo $barang_detail; @endphp;
   
+    $(document).ready(function() {
+        
         $("#tableBarang tbody tr td button").click(function () {
             let kode = $(this).attr('kode');
             let tipe = $(this).attr('tipe')
@@ -261,6 +261,21 @@
                $.post( base_url+'barang', newBarang)
                 .done(function( data ) {
                     console.log(data);
+                    if (data['success']){
+                        newBarang['kode_barang'] = data['barang']['id'];
+                        detailBarang[newBarang['kode_barang']] = newBarang;
+                        addRow(newBarang);
+                        $(document).delegate('#tableBarang tbody tr td button','click',function(){
+                            let kode = $(this).attr('kode');
+                            let tipe = $(this).attr('tipe')
+                            if (tipe == 'detail'){
+                                initDetail(detailBarang[kode]);
+                                $('#modalDetailBarang').modal('show');
+                            }
+                        });
+                    }else{
+                        alert(data['message']);
+                    }
                      $('#modalTambahBarang').modal('hide');
                 });
               
@@ -295,6 +310,21 @@
         });
 
         return result;
+    }
+
+    function addRow(data){
+        var t = $('#tableBarang').DataTable();
+        t.row.add([
+            data['kode_barang'],
+            data['nama_barang'],
+            data['stok'],
+            data['harga_jual'],
+            data['harga_beli'],
+            "<button type='button' class='btn btn-success'kode='"+ data['kode_barang']+"'tipe='edit'><i class='fa fa-edit'></i></button>\n"+
+            "<button type='button' class='btn btn-secondary' kode='"+ data['kode_barang']+"' tipe='detail'><i class='fa fa-eye'></i></button>\n"+
+            "<button type='button' class='btn btn-danger' kode='"+ data['kode_barang']+"' tipe='hapus'> <i class='fa fa-trash'></i></button>\n"
+        ]).draw(true);
+
     }
 
     
