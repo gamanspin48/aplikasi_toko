@@ -239,24 +239,51 @@
 
 <script type="text/javascript">
     var detailBarang = @php echo $barang_detail; @endphp;
-  
+    var t = $('#tableBarang').DataTable();
+    var base_url = "@php echo config('app.base_url_api') @endphp";
     $(document).ready(function() {
         
-        $("#tableBarang tbody tr td button").click(function () {
+        $('#tableBarang tbody').on( 'click', 'button', function () {
+      
             let kode = $(this).attr('kode');
             let tipe = $(this).attr('tipe')
             if (tipe == 'detail'){
                 initDetail(detailBarang[kode]);
                 $('#modalDetailBarang').modal('show');
+            }else if (tipe == 'hapus'){
+                if (confirm('Yakin ingin menghapus barang ini ?')) {
+                        $.ajax({
+                            url: base_url+'barang/'+kode,
+                            type: 'DELETE',
+                            success: function(result) {
+                                if(result['success']){
+                                     var filteredData = t
+                                    .rows()
+                                    .indexes()
+                                    .filter( function ( value, index ) {
+                                    return t.row(value).data()[0] == kode; 
+                                    } );
+                                    t.rows( filteredData )
+                                    .remove()
+                                    .draw();
+                                }else{
+                                    alert(result['message']);
+                                }
+                              
+                            }
+                        });
+                        
+                } 
+                
             }
         });
+
          $("#btnTambah").click(function(){
            $('#modalTambahBarang').modal('show');
         }); 
          $("#btnTambahSubmit").click(function(){
            let newBarang = $('#formTambahBarang').serializeArray();
            newBarang = makeObject(newBarang);
-           let base_url = "@php echo config('app.base_url_api') @endphp";
            if (isValid(newBarang)){
                $.post( base_url+'barang', newBarang)
                 .done(function( data ) {
@@ -266,12 +293,7 @@
                         detailBarang[newBarang['kode_barang']] = newBarang;
                         addRow(newBarang);
                         $(document).delegate('#tableBarang tbody tr td button','click',function(){
-                            let kode = $(this).attr('kode');
-                            let tipe = $(this).attr('tipe')
-                            if (tipe == 'detail'){
-                                initDetail(detailBarang[kode]);
-                                $('#modalDetailBarang').modal('show');
-                            }
+                            buttonEvent();
                         });
                     }else{
                         alert(data['message']);
@@ -313,7 +335,7 @@
     }
 
     function addRow(data){
-        var t = $('#tableBarang').DataTable();
+       
         t.row.add([
             data['kode_barang'],
             data['nama_barang'],
@@ -326,6 +348,8 @@
         ]).draw(true);
 
     }
+
+    
 
     
     
