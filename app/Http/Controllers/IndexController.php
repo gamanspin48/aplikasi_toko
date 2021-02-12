@@ -46,7 +46,13 @@ class IndexController extends Controller
     public function barang_keluar(){
         $response = $this->client->request('GET', 'barang');
         $data = (array)json_decode($response->getBody());
-        return view('layout.barang_keluar');
+        $data['barang_detail'] = [];
+        for ($i = 0; $i < count($data['barang']); $i++){
+            $kodeBarang = $data['barang'][$i]->kode_barang;
+            $data['barang_detail'][$kodeBarang] = $data['barang'][$i];
+        }
+        $data['barang_detail'] = json_encode( $data['barang_detail']);
+        return view('layout.barang_keluar',$data);
     }
 }
 

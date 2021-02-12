@@ -30,9 +30,9 @@
        
             <h5 class="text-primary float-left">Saldo : Rp.100.000</h5>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang</h5>
-            <table id="example" class="table table-striped table-bordered " style="width:100%">
+            <table id="tableBarangMasukOnly" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>Kode Barang</th>
@@ -66,9 +66,9 @@
                 
             </table>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang Masuk</h5>
-            <table id="example" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+            <table id="tableBarangMasuk" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>Kode Barang</th>

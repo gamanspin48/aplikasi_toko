@@ -31,30 +31,32 @@
         {{-- <a><h5 class="text-primary float-right">Logout</h5></a> --}}
             <h5 class="text-primary float-left">Saldo : Rp.100.000</h5>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang</h5>
-            <table id="example" class="table table-striped table-bordered " style="width:100%">
+            <table id="tableBarangOnly" data-order='[[ 0, "desc" ]]' class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
-                        <th>Jumlah</th>
-                        <th>Total</th>
+                        <th>Stok</th>
+                        <th>Harga Jual</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
+                @foreach ( $barang as $b)
                     <tr>
-                        <td>Tiger Nixon</td>
-                        <td>System Architect FJSFJSJFS SJFJS JSFJ</td>
-                        <td>Edinburgh</td>
-                        <td>61</td>
-                        <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter" ><i class="fa fa-plus"></i></button>
-                            
+                        <td>{{$b->kode_barang}}</td>
+                        <td>{{$b->nama_barang}}</td>
+                        <td>{{$b->stok}}</td>
+                        <td>{{$b->harga_jual}}</td>
+                        <td>
+                          <button type="button" kode="{{$b->kode_barang}}" class="btn btn-primary"><i class="fa fa-plus"></i></button>  
                         </td>
                     </tr>
+                @endforeach
                 </tbody>
-                <tfoot>
+                {{-- <tfoot>
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
@@ -64,12 +66,12 @@
                     </tr>
                 </tfoot>
                     
-                
+                 --}}
             </table>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang Keluar</h5>
-            <table id="example" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+            <table id="tableBarangKeluar" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>Kode Barang</th>
@@ -77,11 +79,10 @@
                         <th>Jumlah</th>
                         <th>Total</th>
                         <th>Action</th>
-                       
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    {{-- <tr>
                         <td>Tiger Nixon</td>
                         <td>System Architect FJSFJSJFS SJFJS JSFJ</td>
                         <td>Edinburgh</td>
@@ -90,7 +91,7 @@
                         <td><button type="button" class="btn btn-danger"><i class="fa fa-minus"></i></button>
                             
                         </td>
-                    </tr>
+                    </tr> --}}
                 </tbody>
                 {{-- <tfoot>
                     <tr>
@@ -198,7 +199,7 @@
 
   
   <!-- Modal -->
-  <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal fade" id="modalTambahJumlah" tabindex="-1" role="dialog" aria-labelledby="modalTambahJumlahTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -212,18 +213,100 @@
                 <div class="form-group row">
                   <label for="inputPassword" class="col-sm-2 col-form-label">Jumlah</label>
                   <div class="col-sm-10">
-                    <input type="text" class="form-control" id="inputPassword" placeholder="Isi Jumlah">
+                    <input type="hidden" id="kode_barang">
+                    <input type="hidden" id="index_selected">
+                    <input type="number" class="form-control" id="jumlah" placeholder="Isi Jumlah">
                   </div>
                 </div>
               </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Submit</button>
+          <button type="button" id="btnSubmitJumlah" class="btn btn-primary">Submit</button>
         </div>
       </div>
     </div>
   </div>
-      
+
   </div>
+  <script type="text/javascript">
+    var detailBarang = @php echo $barang_detail; @endphp;
+    var detailBarangKeluar = {};
+    var tBarang =    $('#tableBarangOnly').DataTable({
+          "pageLength": 5 
+        });
+    var tJual = $('#tableBarangKeluar').DataTable();
+    var base_url = "@php echo config('app.base_url_api') @endphp";
+    $('#tableBarangOnly tbody').on( 'click', 'button', function () {
+        let kode = $(this).attr('kode');
+        $('#kode_barang').val(kode);
+        $('#modalTambahJumlah').modal('show');
+        $('#index_selected').val(tBarang.row( $(this).closest('tr')).index());
+    });
+    $("#btnSubmitJumlah").click(function(){
+      let jumlah = $('#jumlah').val();
+      if ( jumlah == '' || jumlah <= 0){
+        alert('masukkan jumlah dengan benar');
+      }else{
+          let kode =   $('#kode_barang').val();
+          let dataBarang = new Object;
+          Object.assign(dataBarang, detailBarang[kode]);
+          let rowIndex = $('#index_selected').val();
+          detailBarang[kode]['stok'] -= jumlah;
+          tBarang.cell(rowIndex, 2).data(detailBarang[kode]['stok']);
+          dataBarang['jumlah'] = jumlah;
+          dataBarang['total'] = dataBarang['harga_jual'] * jumlah;
+
+          if ( kode in detailBarangKeluar){
+      
+              let jumlahTotal =  parseInt(detailBarangKeluar[kode]['jumlah']) + parseInt(dataBarang['jumlah']);
+              let totalTotal = parseFloat(detailBarangKeluar[kode]['total']) + parseFloat(dataBarang['total'])
+
+              detailBarangKeluar[kode]['jumlah'] = jumlahTotal;
+              detailBarangKeluar[kode]['total'] = totalTotal;
+              detailBarangKeluar[kode]['stok'] = detailBarang[kode]['stok'];
+
+              dataBarang['jumlah'] = jumlahTotal;
+              dataBarang['total'] = totalTotal;
+
+              //find index
+              let rowIndex2 = -1;
+              tJual.rows().eq( 0 ).filter( function (rowIdx) {
+                  if (tJual.cell( rowIdx, 0).data() == kode){
+                    rowIndex2 = rowIdx;
+                  }
+              } );
+
+              editRow(dataBarang,rowIndex2);
+          }else{
+              addRow(dataBarang);
+              let newBarang = {}
+              newBarang[kode] = dataBarang;
+              Object.assign(detailBarangKeluar, newBarang);
+              
+          }
+          console.log(detailBarangKeluar);
+          $('#modalTambahJumlah').modal('hide');
+      }
+    });
+
+    function addRow(data){
+       
+        tJual.row.add([
+            data['kode_barang'],
+            data['nama_barang'],
+            data['jumlah'],
+            data['total'],
+            "<button type='button' class='btn btn-danger' kode='"+ data['kode_barang']+"'><i class='fa fa-minus'></i></button>"
+        ]).draw(true);
+
+    }
+
+    function editRow(data,rowIndex){
+
+       tJual.cell(rowIndex, 2).data(data['jumlah']);
+       tJual.cell(rowIndex, 3).data(data['total']);
+
+    }
+  </script>
 @endsection
