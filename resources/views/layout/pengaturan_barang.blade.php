@@ -237,6 +237,91 @@
       
   </div>
 
+ <!-- Modal 3-->
+  <div class="modal fade" id="modalEditBarang" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Edit Barang</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formEditBarang">
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Nama Barang</label>
+                        <div class="col-sm-8">
+                            <input type="hidden" class="form-control" id="kode_barang" name="kode_barang">
+                            <input type="hidden" class="form-control" id="index_row" name="index_row">
+                            <input type="text" class="form-control" id="nama_barang" name="nama_barang" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Satuan</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="satuan" name="satuan" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Stok</label>
+                        <div class="col-sm-8">
+                            <input type="number" class="form-control" id="stok" name="stok" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Harga Beli</label>
+                        <div class="col-sm-8">
+                            <input type="number" class="form-control" id="harga_beli" name="harga_beli" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Harga Jual</label>
+                        <div class="col-sm-8">
+                            <input type="number" class="form-control" id="harga_jual" name="harga_jual" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Merk</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="merk" name="merk" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">Spesifikasi</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="spesifikasi" name="spesifikasi" required>
+                        </div>
+                    </div>
+                </div>
+               
+             
+                
+            </div>
+            <div class="mb-3 row">
+                <label for="inputPassword" class="col-sm-2 col-form-label">Keterangan</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="keterangan" name="keterangan" required>
+                    </div>
+               
+            </div>
+         
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          <button id="btnEditSubmit" type="button" class="btn btn-primary">Edit</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+      
+  </div>
+
 <script type="text/javascript">
     var detailBarang = @php echo $barang_detail; @endphp;
     var t = $('#tableBarang').DataTable();
@@ -275,6 +360,11 @@
                         
                 } 
                 
+            }else if (tipe == "edit"){
+                initEdit(detailBarang[kode]);
+                let rowIndex = t.row( $(this).parents('tr') ).index();
+                $('#index_row').val(rowIndex);
+                $('#modalEditBarang').modal('show');
             }
         });
 
@@ -306,6 +396,37 @@
            }
            
         }); 
+
+         $("#btnEditSubmit").click(function(){
+           let newBarang = $('#formEditBarang').serializeArray();
+           newBarang = makeObject(newBarang);
+           let kodeBarang = newBarang['kode_barang'];
+           let rowIndex = newBarang['index_row'];
+           delete newBarang['kode_barang'];
+           delete newBarang['index_row'];
+           if (isValid(newBarang)){
+               $.ajax({
+                    url: base_url+'barang/'+kodeBarang,
+                    type: 'PUT',
+                    data:JSON.stringify(newBarang),
+                    contentType: 'application/json',
+                    success: function(result) {
+                        if(result['success']){
+                            editRow(newBarang,rowIndex);
+                            editDataBarang(newBarang,kodeBarang);
+                        }else{
+                            alert(result['message']);
+                        }
+                        refreshEdit(newBarang);
+                        $('#modalEditBarang').modal('hide');
+                    }
+                });
+           }else{
+               alert('Isi Semua Data');
+           }
+           
+        }); 
+
     });
     const formatToCurrency = amount => {
         return "IDR. " + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
@@ -313,6 +434,27 @@
     function initDetail(barang){
         $.each( barang, function( key, value ) {
              $('#detail-'+key).val(value);
+        })
+    }
+    function initEdit(barang){
+        $.each( barang, function( key, value ) {
+             $('#'+key).val(value);
+        })
+    }
+    function editRow(barang,rowIndex){
+        t.cell(rowIndex, 1).data(barang['nama_barang']);
+        t.cell(rowIndex, 2).data(barang['stok']);
+        t.cell(rowIndex, 3).data(barang['harga_jual']);
+        t.cell(rowIndex, 4).data(barang['harga_beli']);
+    }
+    function editDataBarang(barang,kodeBarang){
+         $.each( barang, function( key, value ) {
+             detailBarang[kodeBarang][key] = value;
+        })
+    }
+    function refreshEdit(barang){
+        $.each( barang, function( key, value ) {
+             $('#'+key).val('');
         })
     }
     function makeObject(arr){
