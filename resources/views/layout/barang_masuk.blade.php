@@ -65,6 +65,7 @@
                     
                 
             </table>
+             <button type="button" id="btnProcess" class="btn btn-success float-right mt-2">Proses</button>
         </div>
         <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang Masuk</h5>
@@ -104,6 +105,7 @@
                     
                 
             </table>
+            
         </div>
 
     </div>

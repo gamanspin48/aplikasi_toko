@@ -395,9 +395,6 @@
                         newBarang['kode_barang'] = data['barang']['id'];
                         detailBarang[newBarang['kode_barang']] = newBarang;
                         addRow(newBarang);
-                        $(document).delegate('#tableBarang tbody tr td button','click',function(){
-                            buttonEvent();
-                        });
                     }else{
                         alert(data['message']);
                     }

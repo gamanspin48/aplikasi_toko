@@ -56,7 +56,7 @@
                     </tr>
                 @endforeach
                 </tbody>
-                {{-- <tfoot>
+                <tfoot>
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
@@ -66,8 +66,9 @@
                     </tr>
                 </tfoot>
                     
-                 --}}
+                
             </table>
+            <button type="button" id="btnProcess" class="btn btn-success float-right mt-2">Proses</button>
         </div>
         <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang Keluar</h5>
@@ -76,6 +77,7 @@
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
+                        <th>Harga</th>
                         <th>Jumlah</th>
                         <th>Total</th>
                         <th>Action</th>
@@ -97,10 +99,10 @@
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
+                        <th>Harga</th>
                         <th>Jumlah</th>
                         <th>Total</th>
                         <th>Action</th>
-   
                     </tr>
                 </tfoot> --}}
                     
@@ -215,7 +217,7 @@
                   <div class="col-sm-10">
                     <input type="hidden" id="kode_barang">
                     <input type="hidden" id="index_selected">
-                    <input type="number" class="form-control" id="jumlah" placeholder="Isi Jumlah">
+                    <input type="number" class="form-control" id="jumlah" placeholder="Isi Jumlah" value="1">
                   </div>
                 </div>
               </form>
@@ -245,10 +247,12 @@
     });
     $("#btnSubmitJumlah").click(function(){
       let jumlah = $('#jumlah').val();
+      let kode =   $('#kode_barang').val();
       if ( jumlah == '' || jumlah <= 0){
         alert('masukkan jumlah dengan benar');
+      }else if (jumlah > detailBarang[kode]['stok']){
+        alert('stok kurang');
       }else{
-          let kode =   $('#kode_barang').val();
           let dataBarang = new Object;
           Object.assign(dataBarang, detailBarang[kode]);
           let rowIndex = $('#index_selected').val();
@@ -279,10 +283,12 @@
 
               editRow(dataBarang,rowIndex2);
           }else{
+
               addRow(dataBarang);
-              let newBarang = {}
+              let newBarang = {};
               newBarang[kode] = dataBarang;
               Object.assign(detailBarangKeluar, newBarang);
+              detailBarangKeluar[kode]['stok'] = detailBarang[kode]['stok'];
               
           }
           console.log(detailBarangKeluar);
@@ -290,11 +296,67 @@
       }
     });
 
+     $('#tableBarangKeluar tbody').on( 'click', 'button', function () {
+        let kode = $(this).attr('kode');
+        var filteredData = tJual
+          .rows()
+          .indexes()
+          .filter( function ( value, index ) {
+            return tJual.row(value).data()[0] == kode; 
+          } );
+          tJual.rows( filteredData )
+          .remove()
+          .draw();
+        detailBarang[kode]['stok'] = parseInt(detailBarang[kode]['stok']) + parseInt(detailBarangKeluar[kode]['jumlah']);  
+        delete detailBarangKeluar[kode];
+        let rowIndex = -1;
+        tBarang.rows().eq( 0 ).filter( function (rowIdx) {
+            if (tBarang.cell( rowIdx, 0).data() == kode){
+              rowIndex = rowIdx;
+            }
+        });
+        tBarang.cell(rowIndex, 2).data(detailBarang[kode]['stok']);
+
+
+     });
+
+     $('#btnProcess').click(function(){
+       
+        if (Object.keys(detailBarangKeluar).length > 0){
+            if (confirm('Apakah anda yakin ?')){
+                let isSuccess = true;
+                $.each( detailBarangKeluar, function( key, value ) {
+                      console.log(key+':'+value['stok']);
+                    $.ajax({
+                        url: base_url+'barang/'+key+'/'+value['stok'],
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        success: function(result) {
+                            if(!result['success']){
+                              isSuccess = false;
+                              return false;
+                            }
+                        }
+                    });
+                });
+                if (isSuccess){
+                  location.reload();
+                }else{
+                  alert('terjadi kesalahan harap cek data barang kembali');
+                }
+            }
+           
+        }else{
+          alert('tambah barang dulu!');
+        }
+     });
+
     function addRow(data){
        
         tJual.row.add([
             data['kode_barang'],
             data['nama_barang'],
+            data['harga_jual'],
             data['jumlah'],
             data['total'],
             "<button type='button' class='btn btn-danger' kode='"+ data['kode_barang']+"'><i class='fa fa-minus'></i></button>"
