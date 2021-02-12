@@ -91,7 +91,13 @@
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Satuan</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="inputPassword" name="satuan" required>
+                              <select class="form-control" name="satuan" required>
+                                <option value="pcs">Pcs</option>
+                                <option value="meter">Meter</option>
+                                <option value="dus">Dus</option>
+                                <option value="box">Box</option>
+                                <option value="cm">Cm</option>
+                            </select>
                         </div>
                     </div>
                     <div class="mb-3 row">
@@ -262,7 +268,14 @@
                     <div class="mb-3 row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">Satuan</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="satuan" name="satuan" required>
+                            <select class="form-control" id="satuan" name="satuan" required>
+                                <option value="pcs">Pcs</option>
+                                <option value="meter">Meter</option>
+                                <option value="dus">Dus</option>
+                                <option value="box">Box</option>
+                                <option value="cm">Cm</option>
+                            </select>
+
                         </div>
                     </div>
                     <div class="mb-3 row">
