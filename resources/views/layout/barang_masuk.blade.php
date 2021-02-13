@@ -28,37 +28,39 @@
     <div class="row m-2 ">
         <div class="col-md-12">
        
-            <h5 class="text-primary float-left">Saldo : Rp.100.000</h5>
+            <h5 class="text-primary float-left">Saldo : Rp 100.000</h5>
         </div>
         <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang</h5>
-            <table id="tableBarangMasukOnly" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+            <table id="tableBarangMasukOnly" data-order='[[ 0, "desc" ]]' class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
-                        <th>Jumlah</th>
-                        <th>Total</th>
+                        <th>Stok</th>
+                        <th>Harga Beli</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
+                 @foreach ( $barang as $b)
                     <tr>
-                        <td>Tiger Nixon</td>
-                        <td>System Architect FJSFJSJFS SJFJS JSFJ</td>
-                        <td>Edinburgh</td>
-                        <td>61</td>
-                        <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter" ><i class="fa fa-plus"></i></button>
-                            
+                        <td>{{$b->kode_barang}}</td>
+                        <td>{{$b->nama_barang}}</td>
+                        <td>{{$b->stok}}</td>
+                        <td>{{$b->harga_beli}}</td>
+                        <td>
+                          <button type="button" kode="{{$b->kode_barang}}" class="btn btn-primary"><i class="fa fa-plus"></i></button>  
                         </td>
                     </tr>
+                @endforeach
                 </tbody>
                 <tfoot>
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
-                        <th>Jumlah</th>
-                        <th>Total</th>
+                        <th>Stok</th>
+                        <th>Harga Beli</th>
                         <th>Action</th>
                     </tr>
                 </tfoot>
@@ -66,6 +68,10 @@
                 
             </table>
              <button type="button" id="btnProcess" class="btn btn-success float-right mt-2">Proses</button>
+             <div class="col-md-12">
+              {{-- <a><h5 class="text-primary float-right">Logout</h5></a> --}}
+                <h5 class="text-success float-left" id="textTotal">Total : Rp  0</h5>
+            </div>
         </div>
         <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang Masuk</h5>
@@ -74,36 +80,14 @@
                     <tr>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
+                        <th>Harga</th>
                         <th>Jumlah</th>
                         <th>Total</th>
-                        <th>Action</th>
-                       
+                        <th>Action</th> 
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Tiger Nixon</td>
-                        <td>System Architect FJSFJSJFS SJFJS JSFJ</td>
-                        <td>Edinburgh</td>
-                        <td>61</td>
-            
-                        <td><button type="button" class="btn btn-danger"><i class="fa fa-minus"></i></button>
-                            
-                        </td>
-                    </tr>
                 </tbody>
-                {{-- <tfoot>
-                    <tr>
-                        <th>Kode Barang</th>
-                        <th>Nama Barang</th>
-                        <th>Jumlah</th>
-                        <th>Total</th>
-                        <th>Action</th>
-   
-                    </tr>
-                </tfoot> --}}
-                    
-                
             </table>
             
         </div>
@@ -199,7 +183,7 @@
 
   
   <!-- Modal -->
-  <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal fade" id="modalTambahJumlah" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -213,18 +197,161 @@
                 <div class="form-group row">
                   <label for="inputPassword" class="col-sm-2 col-form-label">Jumlah</label>
                   <div class="col-sm-10">
-                    <input type="text" class="form-control" id="inputPassword" placeholder="Isi Jumlah">
+                      <input type="hidden" id="kode_barang">
+                      <input type="hidden" id="index_selected">
+                      <input type="number" class="form-control" id="jumlah" placeholder="Isi Jumlah" value="1">
                   </div>
                 </div>
               </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Submit</button>
+          <button type="button" class="btn btn-primary" id="btnSubmitJumlah">Submit</button>
         </div>
       </div>
     </div>
   </div>
       
   </div>
+  <script type="text/javascript">
+    var detailBarang = @php echo $barang_detail; @endphp;
+    var detailBarangMasuk = {};
+    var tBarang =    $('#tableBarangMasukOnly').DataTable({
+          "pageLength": 5 
+        });
+    var tBeli = $('#tableBarangMasuk').DataTable();
+    var base_url = "@php echo config('app.base_url_api') @endphp";
+    var total = 0;
+    $('#tableBarangMasukOnly tbody').on( 'click', 'button', function () {
+        let kode = $(this).attr('kode');
+        $('#kode_barang').val(kode);
+        $('#modalTambahJumlah').modal('show');
+        $('#index_selected').val(tBarang.row( $(this).closest('tr')).index());
+    });
+    $("#btnSubmitJumlah").click(function(){
+      let jumlah = $('#jumlah').val();
+      let kode =   $('#kode_barang').val();
+      if ( jumlah == '' || jumlah <= 0){
+        alert('masukkan jumlah dengan benar');
+      }else{
+          let dataBarang = new Object;
+          Object.assign(dataBarang, detailBarang[kode]);
+          let rowIndex = $('#index_selected').val();
+          detailBarang[kode]['stok'] = parseInt(detailBarang[kode]['stok']) + parseInt(jumlah);
+          tBarang.cell(rowIndex, 2).data(detailBarang[kode]['stok']);
+          dataBarang['jumlah'] = jumlah;
+          dataBarang['total'] = dataBarang['harga_beli'] * jumlah;
+
+          total +=  dataBarang['total'];
+          tBarang.cell(rowIndex, 2).data(detailBarang[kode]['stok']);
+          $('#textTotal').html('Total : Rp '+total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."));
+
+          if ( kode in detailBarangMasuk){
+      
+              let jumlahTotal =  parseInt(detailBarangMasuk[kode]['jumlah']) + parseInt(dataBarang['jumlah']);
+              let totalTotal = parseFloat(detailBarangMasuk[kode]['total']) + parseFloat(dataBarang['total'])
+
+              detailBarangMasuk[kode]['jumlah'] = jumlahTotal;
+              detailBarangMasuk[kode]['total'] = totalTotal;
+              detailBarangMasuk[kode]['stok'] = detailBarang[kode]['stok'];
+
+              dataBarang['jumlah'] = jumlahTotal;
+              dataBarang['total'] = totalTotal;
+
+              //find index
+              let rowIndex2 = -1;
+              tBeli.rows().eq( 0 ).filter( function (rowIdx) {
+                  if (tBeli.cell( rowIdx, 0).data() == kode){
+                    rowIndex2 = rowIdx;
+                  }
+              } );
+
+              editRow(dataBarang,rowIndex2);
+          }else{
+
+              addRow(dataBarang);
+              let newBarang = {};
+              newBarang[kode] = dataBarang;
+              Object.assign(detailBarangMasuk, newBarang);
+              detailBarangMasuk[kode]['stok'] = detailBarang[kode]['stok'];
+              
+          }
+          console.log(detailBarangMasuk);
+          $('#modalTambahJumlah').modal('hide');
+      }
+    });
+     $('#tableBarangMasuk tbody').on( 'click', 'button', function () {
+        let kode = $(this).attr('kode');
+        var filteredData = tBeli
+          .rows()
+          .indexes()
+          .filter( function ( value, index ) {
+            return tBeli.row(value).data()[0] == kode; 
+          } );
+          tBeli.rows( filteredData )
+          .remove()
+          .draw();
+        detailBarang[kode]['stok'] = parseInt(detailBarang[kode]['stok']) - parseInt(detailBarangMasuk[kode]['jumlah']);  
+        delete detailBarangMasuk[kode];
+        let rowIndex = -1;
+        tBarang.rows().eq( 0 ).filter( function (rowIdx) {
+            if (tBarang.cell( rowIdx, 0).data() == kode){
+              rowIndex = rowIdx;
+            }
+        });
+        tBarang.cell(rowIndex, 2).data(detailBarang[kode]['stok']);
+
+
+     });
+         $('#btnProcess').click(function(){
+       
+        if (Object.keys(detailBarangMasuk).length > 0){
+            if (confirm('Apakah anda yakin ?')){
+                let isSuccess = true;
+                $.each( detailBarangMasuk, function( key, value ) {
+                      console.log(key+':'+value['stok']);
+                    $.ajax({
+                        url: base_url+'barang/'+key+'/'+value['stok'],
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        success: function(result) {
+                            if(!result['success']){
+                              isSuccess = false;
+                              return false;
+                            }
+                        }
+                    });
+                });
+                if (isSuccess){
+                  location.reload();
+                }else{
+                  alert('terjadi kesalahan harap cek data barang kembali');
+                }
+            }
+           
+        }else{
+          alert('tambah barang dulu!');
+        }
+     });
+
+     function addRow(data){
+       
+        tBeli.row.add([
+            data['kode_barang'],
+            data['nama_barang'],
+            data['harga_beli'],
+            data['jumlah'],
+            data['total'],
+            "<button type='button' class='btn btn-danger' kode='"+ data['kode_barang']+"'><i class='fa fa-minus'></i></button>"
+        ]).draw(true);
+
+    }
+
+    function editRow(data,rowIndex){
+
+       tBeli.cell(rowIndex, 3).data(data['jumlah']);
+       tBeli.cell(rowIndex, 4).data(data['total']);
+
+    }
+  </script>
 @endsection

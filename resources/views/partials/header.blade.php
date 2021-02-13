@@ -63,7 +63,6 @@
     $(document).ready(function() {
         $('#tableBarang').DataTable();
         $('#tableBarangKeluar').DataTable();
-        $('#tableBarangMasukOnly').DataTable();
         $('#tableBarangMasuk').DataTable();
     } );
 

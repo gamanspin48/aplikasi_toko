@@ -58,10 +58,10 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th>Kode Barang</th>
+                       <th>Kode Barang</th>
                         <th>Nama Barang</th>
-                        <th>Jumlah</th>
-                        <th>Total</th>
+                        <th>Stok</th>
+                        <th>Harga Jual</th>
                         <th>Action</th>
                     </tr>
                 </tfoot>
@@ -69,6 +69,10 @@
                 
             </table>
             <button type="button" id="btnProcess" class="btn btn-success float-right mt-2">Proses</button>
+            <div class="col-md-12">
+              {{-- <a><h5 class="text-primary float-right">Logout</h5></a> --}}
+                <h5 class="text-success float-left" id="textTotal">Total : Rp. 0</h5>
+            </div>
         </div>
         <div class="col-md-12">
             <h5 class="text-center mb-5">Tabel Barang Keluar</h5>
@@ -84,29 +88,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- <tr>
-                        <td>Tiger Nixon</td>
-                        <td>System Architect FJSFJSJFS SJFJS JSFJ</td>
-                        <td>Edinburgh</td>
-                        <td>61</td>
-            
-                        <td><button type="button" class="btn btn-danger"><i class="fa fa-minus"></i></button>
-                            
-                        </td>
-                    </tr> --}}
                 </tbody>
-                {{-- <tfoot>
-                    <tr>
-                        <th>Kode Barang</th>
-                        <th>Nama Barang</th>
-                        <th>Harga</th>
-                        <th>Jumlah</th>
-                        <th>Total</th>
-                        <th>Action</th>
-                    </tr>
-                </tfoot> --}}
-                    
-                
             </table>
         </div>
 
@@ -239,6 +221,7 @@
         });
     var tJual = $('#tableBarangKeluar').DataTable();
     var base_url = "@php echo config('app.base_url_api') @endphp";
+    var total = 0;
     $('#tableBarangOnly tbody').on( 'click', 'button', function () {
         let kode = $(this).attr('kode');
         $('#kode_barang').val(kode);
@@ -257,9 +240,12 @@
           Object.assign(dataBarang, detailBarang[kode]);
           let rowIndex = $('#index_selected').val();
           detailBarang[kode]['stok'] -= jumlah;
-          tBarang.cell(rowIndex, 2).data(detailBarang[kode]['stok']);
           dataBarang['jumlah'] = jumlah;
           dataBarang['total'] = dataBarang['harga_jual'] * jumlah;
+          total +=  dataBarang['total'];
+
+          tBarang.cell(rowIndex, 2).data(detailBarang[kode]['stok']);
+          $('#textTotal').html('Total : Rp.'+total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."));
 
           if ( kode in detailBarangKeluar){
       
@@ -366,8 +352,8 @@
 
     function editRow(data,rowIndex){
 
-       tJual.cell(rowIndex, 2).data(data['jumlah']);
-       tJual.cell(rowIndex, 3).data(data['total']);
+       tJual.cell(rowIndex, 3).data(data['jumlah']);
+       tJual.cell(rowIndex, 4).data(data['total']);
 
     }
   </script>
